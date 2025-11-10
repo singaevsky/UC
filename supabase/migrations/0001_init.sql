@@ -26,7 +26,7 @@ begin
   end if;
 end$$;
 
--- Профили пользователей (id = auth.users.id)
+-- Профили пользователей
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
@@ -117,7 +117,7 @@ create table if not exists public.wishlists (
   primary key (user_id, product_id)
 );
 
--- Корзина (поддержка гостя по session_id)
+-- Корзина
 create table if not exists public.cart_items (
   id bigserial primary key,
   user_id uuid references public.profiles(id) on delete cascade,
@@ -224,22 +224,14 @@ create table if not exists public.events (
   created_at timestamptz not null default now()
 );
 
--- Гостевая сессия (если понадобится)
+-- Сессии
 create table if not exists public.sessions (
   id uuid primary key,
   user_id uuid references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now()
 );
 
--- Индексы
-create index if not exists idx_products_slug on public.products(slug);
-create index if not exists idx_products_active on public.products(active);
-create index if not exists idx_products_category on public.products(category_id);
-create index if not exists idx_reviews_product on public.reviews(product_id);
-create index if not exists idx_cart_items_owner on public.cart_items(user_id, session_id);
-create index if not exists idx_orders_user on public.orders(user_id);
-
--- Триггеры и функции
+-- Функции и триггеры
 create or replace function public.trigger_set_timestamp()
 returns trigger language plpgsql as $$
 begin
@@ -256,6 +248,22 @@ drop trigger if exists set_timestamp_cart_items on public.cart_items;
 create trigger set_timestamp_cart_items
 before update on public.cart_items
 for each row execute procedure public.trigger_set_timestamp();
+
+-- Функция для начисления бонусов
+create or replace function public.increment_bonus(p_user_id uuid, p_amount int)
+returns void language plpgsql as $$
+begin
+  update public.profiles set bonus_balance = bonus_balance + p_amount where id = p_user_id;
+  insert into public.bonus_transactions (user_id, type, amount) values (p_user_id, 'earn', p_amount);
+end; $$;
+
+-- Индексы
+create index if not exists idx_products_slug on public.products(slug);
+create index if not exists idx_products_active on public.products(active);
+create index if not exists idx_products_category on public.products(category_id);
+create index if not exists idx_reviews_product on public.reviews(product_id);
+create index if not exists idx_cart_items_owner on public.cart_items(user_id, session_id);
+create index if not exists idx_orders_user on public.orders(user_id);
 
 -- RLS
 alter table public.profiles enable row level security;
@@ -288,7 +296,8 @@ create policy "Public read posts published" on public.posts for select using (st
 create policy "Public read pages" on public.pages for select using (published = true);
 create policy "Public read gallery" on public.gallery for select using (true);
 create policy "Public read banners" on public.banners for select using (active = true);
--- Отзывы: опубликованные читают все, создавать может авторизованный
+
+-- Отзывы
 create policy "Public read reviews published" on public.reviews for select using (status = 'published');
 create policy "Users insert their reviews" on public.reviews for insert with check (auth.uid() = user_id);
 create policy "Users update own reviews" on public.reviews for update using (auth.uid() = user_id);
@@ -301,8 +310,7 @@ create policy "Users insert own profile" on public.profiles for insert with chec
 -- Избранное
 create policy "Users manage wishlist" on public.wishlists for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- Корзина: свой user_id либо свой session_id (проверяется в RPC)
--- Здесь разрешаем select всем записи, где есть user_id или session_id совпадает с текущим
+-- Корзина
 create policy "Read own cart" on public.cart_items for select using (
   auth.uid() = user_id
   or session_id = current_setting('app.session_id', true)
@@ -319,7 +327,7 @@ create policy "Delete own cart" on public.cart_items for delete using (
   or session_id = current_setting('app.session_id', true)
 );
 
--- Заказы: пользователь видит/создаёт только свои
+-- Заказы
 create policy "Users read own orders" on public.orders for select using (auth.uid() = user_id);
 create policy "Users insert own orders" on public.orders for insert with check (auth.uid() = user_id);
 create policy "Users update own orders (limited)" on public.orders for update using (auth.uid() = user_id);
@@ -342,6 +350,3 @@ create policy "Users update own notifications" on public.notifications for updat
 -- События
 create policy "Insert events" on public.events for insert with check (true);
 create policy "Users read own events" on public.events for select using (auth.uid() = user_id);
-
--- Админ: примитивно по claim 'role' == 'admin' (при необходимости включите и используйте)
--- Здесь можно создать доп. политики через Postgres claim в JWT.

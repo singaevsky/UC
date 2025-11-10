@@ -2,32 +2,91 @@
 
 import { getClient } from '@/lib/supabase/client';
 import { useState } from 'react';
+import FadeIn from '@/components/animations/FadeIn';
+import { Analytics } from '@/lib/analytics';
 
 export default function AuthPage() {
   const supabase = getClient();
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function signInEmail(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
-    if (error) alert(error.message); else alert('Ссылка отправлена на почту');
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    });
+
+    setLoading(false);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert('Ссылка отправлена на почту');
+      Analytics.trackLogin('email');
+    }
   }
 
   async function signIn(provider: 'google' | 'github') {
-    await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+    setLoading(true);
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin }
+    });
+    Analytics.trackLogin(provider);
   }
 
   return (
-    <div className="card" style={{ maxWidth: 420 }}>
-      <h1>Войти</h1>
-      <form onSubmit={signInEmail}>
-        <label>Email</label>
-        <input className="input" value={email} onChange={e => setEmail(e.target.value)} />
-        <button className="btn" type="submit">Войти по ссылке</button>
-      </form>
-      <div style={{ marginTop: 12 }}>
-        <button className="btn--outline" onClick={() => signIn('google')}>Войти через Google</button>
+    <FadeIn>
+      <div className="max-w-md mx-auto">
+        <div className="card">
+          <h1>Войти</h1>
+          <form onSubmit={signInEmail} className="mt-3">
+            <label>Email</label>
+            <input
+              className="input"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+            <button
+              className="btn"
+              type="submit"
+              disabled={loading}
+              style={{ width: '100%', marginTop: '12px' }}
+            >
+              {loading ? 'Отправляем...' : 'Войти по ссылке'}
+            </button>
+          </form>
+
+          <div className="mt-3">
+            <p style={{ textAlign: 'center', color: '#666' }}>или</p>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button
+                className="btn--outline"
+                onClick={() => signIn('google')}
+                disabled={loading}
+                style={{ flex: 1 }}
+              >
+                Google
+              </button>
+              <button
+                className="btn--outline"
+                onClick={() => signIn('github')}
+                disabled={loading}
+                style={{ flex: 1 }}
+              >
+                GitHub
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </FadeIn>
   );
 }

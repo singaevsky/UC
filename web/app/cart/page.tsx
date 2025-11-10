@@ -14,24 +14,32 @@ export default async function CartPage() {
   return (
     <div>
       <h1>Корзина</h1>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+      <div className="grid" style={{ gridTemplateColumns: '2fr 1fr' }}>
         <div>
           {items?.map((i) => (
-            <div key={i.id} className="card" style={{ display: 'flex', gap: 12 }}>
-              <Image src={i.products?.images?.[0] ?? '/images/placeholder.jpg'} alt={i.products?.name ?? ''} width={120} height={90} />
+            <div key={i.id} className="card" style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+              <Image
+                src={i.products?.images?.[0] ?? '/images/placeholder.jpg'}
+                alt={i.products?.name ?? ''}
+                width={120}
+                height={90}
+                style={{ borderRadius: '8px' }}
+              />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700 }}>{i.products?.name}</div>
                 <div>{formatPrice((i.products?.price ?? 0) * i.quantity)}</div>
-                <div>Кол-во: {i.quantity}</div>
+                <div>Количество: {i.quantity}</div>
               </div>
               <RemoveFromCart id={i.id} />
             </div>
-          )) ?? <p>Корзина пуста</p>}
+          )) ?? <div className="card">Корзина пуста</div>}
         </div>
         <div className="card">
           <h3>Итого</h3>
-          <p style={{ fontWeight: 800 }}>{formatPrice(total)}</p>
-          <Link className="btn" href="/checkout">Оформить заказ</Link>
+          <p style={{ fontSize: '24px', fontWeight: 800 }}>{formatPrice(total)}</p>
+          <Link className="btn" href="/checkout" style={{ width: '100%', textAlign: 'center' }}>
+            Оформить заказ
+          </Link>
         </div>
       </div>
     </div>
