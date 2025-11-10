@@ -1,0 +1,18 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "YOO_SHOP_ID": "@yoo-shop-id",
+    "YOO_SECRET_KEY": "@yoo-secret-key",
+    "YOO_WEBHOOK_SECRET": "@yoo-webhook-secret"
+  }
+}
