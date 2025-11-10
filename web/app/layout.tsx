@@ -1,7 +1,6 @@
 import './globals.scss';
 import { createServerComponentClient, createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import Link from 'next/link';
 import { ReactNode } from 'react';
 import Header from './layout-header';
 import Footer from './layout-footer';

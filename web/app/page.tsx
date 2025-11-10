@@ -16,15 +16,17 @@ export default async function HomePage() {
       <FadeIn>
         <section className="grid" style={{ gridTemplateColumns: 'repeat(12, 1fr)', alignItems: 'center' }}>
           <div style={{ gridColumn: 'span 7' }}>
-            <h1 style={{ fontSize: 36, fontWeight: 800, color: 'var(--color-accent)' }}>Уездный кондитер</h1>
-            <p style={{ fontSize: 18, lineHeight: 1.6, color: '#666' }}>
+            <h1 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--color-accent)', marginBottom: '16px' }}>
+              Уездный кондитер
+            </h1>
+            <p style={{ fontSize: '18px', lineHeight: 1.6, color: '#666', marginBottom: '20px' }}>
               Свежие торты и десерты с любовью. Создайте торт своей мечты в нашем конструкторе.
             </p>
-            <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-              <Link className="btn" href="/constructor" style={{ fontSize: 16, padding: '12px 24px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <Link className="btn" href="/constructor" style={{ fontSize: '16px', padding: '12px 24px' }}>
                 Создать торт
               </Link>
-              <Link className="btn--outline" href="/catalog" style={{ fontSize: 16, padding: '12px 24px' }}>
+              <Link className="btn--outline" href="/catalog" style={{ fontSize: '16px', padding: '12px 24px' }}>
                 В каталог
               </Link>
             </div>
@@ -39,15 +41,28 @@ export default async function HomePage() {
                   height={360}
                   style={{ width: '100%', height: 'auto' }}
                 />
-              ) : null}
+              ) : (
+                <div style={{
+                  width: '100%',
+                  height: '300px',
+                  background: 'linear-gradient(135deg, var(--color-primary), var(--color-mint))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',
+                  fontSize: '48px'
+                }}>
+                  🎂
+                </div>
+              )}
             </div>
           </div>
         </section>
       </FadeIn>
 
       <FadeIn delay={0.2}>
-        <section style={{ marginTop: 40 }}>
-          <h2>Хиты продаж</h2>
+        <section style={{ marginTop: '40px' }}>
+          <h2 style={{ marginBottom: '24px' }}>Хиты продаж</h2>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
             {products?.map((p, index) => (
               <FadeIn key={p.id} delay={index * 0.1}>
@@ -60,10 +75,10 @@ export default async function HomePage() {
                     alt={p.name}
                     width={300}
                     height={200}
-                    style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                    style={{ width: '100%', height: 'auto', borderRadius: '8px', marginBottom: '12px' }}
                   />
-                  <h3 style={{ margin: '12px 0 8px 0' }}>{p.name}</h3>
-                  <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-accent)' }}>
+                  <h3 style={{ margin: '0 0 8px 0' }}>{p.name}</h3>
+                  <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-accent)', marginBottom: '12px' }}>
                     {formatPrice(p.price)}
                   </p>
                   <Link
@@ -81,28 +96,28 @@ export default async function HomePage() {
       </FadeIn>
 
       <FadeIn delay={0.4}>
-        <section style={{ marginTop: 40, padding: 32, background: 'var(--color-cream)', borderRadius: 12 }}>
+        <section style={{ marginTop: '40px', padding: '32px', background: 'var(--color-cream)', borderRadius: '12px' }}>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', alignItems: 'center' }}>
             <div>
-              <h2 style={{ color: 'var(--color-accent)', marginBottom: 12 }}>Создай свой торт</h2>
-              <p style={{ fontSize: 16, lineHeight: 1.6, marginBottom: 20 }}>
+              <h2 style={{ color: 'var(--color-accent)', marginBottom: '12px' }}>Создай свой торт</h2>
+              <p style={{ fontSize: '16px', lineHeight: 1.6, marginBottom: '20px' }}>
                 Выберите событие, начинки, форму и декор — оформим заказ, как только получим ваш эскиз.
               </p>
-              <Link className="btn" href="/constructor" style={{ fontSize: 16, padding: '12px 24px' }}>
+              <Link className="btn" href="/constructor" style={{ fontSize: '16px', padding: '12px 24px' }}>
                 Открыть конструктор
               </Link>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{
-                width: 200,
-                height: 200,
+                width: '200px',
+                height: '200px',
                 background: 'linear-gradient(135deg, var(--color-primary), var(--color-mint))',
                 borderRadius: '50%',
                 margin: '0 auto',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 60
+                fontSize: '60px'
               }}>
                 🎂
               </div>
@@ -112,31 +127,31 @@ export default async function HomePage() {
       </FadeIn>
 
       <FadeIn delay={0.6}>
-        <section style={{ marginTop: 40 }}>
-          <h2>Отзывы наших клиентов</h2>
+        <section style={{ marginTop: '40px' }}>
+          <h2 style={{ marginBottom: '24px' }}>Отзывы наших клиентов</h2>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>⭐⭐⭐⭐⭐</div>
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>⭐⭐⭐⭐⭐</div>
               <p>"Самые вкусные торты в городе! Заказывали на свадьбу — все гости в восторге!"</p>
-              <div style={{ fontWeight: 600, marginTop: 12 }}>Анна</div>
+              <div style={{ fontWeight: 600, marginTop: '12px' }}>Анна</div>
             </div>
             <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>⭐⭐⭐⭐⭐</div>
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>⭐⭐⭐⭐⭐</div>
               <p>"Конструктор тортов — гениальная штука! Сделали торт точно как хотели."</p>
-              <div style={{ fontWeight: 600, marginTop: 12 }}>Максим</div>
+              <div style={{ fontWeight: 600, marginTop: '12px' }}>Максим</div>
             </div>
             <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>⭐⭐⭐⭐⭐</div>
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>⭐⭐⭐⭐⭐</div>
               <p>"Отличный сервис, быстрая доставка и безумно вкусно!"</p>
-              <div style={{ fontWeight: 600, marginTop: 12 }}>Екатерина</div>
+              <div style={{ fontWeight: 600, marginTop: '12px' }}>Екатерина</div>
             </div>
           </div>
         </section>
       </FadeIn>
 
       <FadeIn delay={0.8}>
-        <section style={{ marginTop: 40 }}>
-          <h2>Акции и спецпредложения</h2>
+        <section style={{ marginTop: '40px' }}>
+          <h2 style={{ marginBottom: '24px' }}>Акции и спецпредложения</h2>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
             {promotions?.slice(0, 2).map(promo => (
               <div key={promo.id} className="card" style={{

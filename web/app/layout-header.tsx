@@ -21,12 +21,12 @@ export default function Header({ userEmail }: { userEmail: string | null }) {
   }, [userEmail]);
 
   return (
-    <header style={{ background: 'var(--color-cream)', padding: '12px 0', marginBottom: 16 }}>
+    <header style={{ background: 'var(--color-cream)', padding: '16px 0', marginBottom: '16px', boxShadow: 'var(--shadow)' }}>
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" className="logo" style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-accent)' }}>
+        <Link href="/" className="logo" style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-accent)' }}>
           Уездный кондитер
         </Link>
-        <nav style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <nav className="nav">
           <Link href="/catalog">Каталог</Link>
           <Link href="/constructor">Конструктор</Link>
           <Link href="/promos">Акции</Link>
@@ -38,22 +38,22 @@ export default function Header({ userEmail }: { userEmail: string | null }) {
           <Link href="/faq">FAQ</Link>
 
           {/* Корзина */}
-          <Link href="/cart" data-cart-icon style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Link href="/cart" data-cart-icon style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
             🛒
             {cartCount > 0 && (
               <span style={{
                 position: 'absolute',
-                top: -8,
-                right: -8,
+                top: '-8px',
+                right: '-8px',
                 background: 'var(--color-accent)',
                 color: 'white',
                 borderRadius: '50%',
-                width: 20,
-                height: 20,
+                width: '20px',
+                height: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 12,
+                fontSize: '12px',
                 fontWeight: 'bold'
               }}>
                 {cartCount}
