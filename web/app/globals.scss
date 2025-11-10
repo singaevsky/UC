@@ -1,0 +1,21 @@
+:root {
+  --color-primary: #e6b6c4; // пастельный розовый
+  --color-accent: #7b5a3c;  // шоколадный
+  --color-gold: #d4af37;    // золотистый
+  --color-mint: #a8e6cf;    // мята
+  --color-cream: #fff5e6;   // кремовый
+  --text: #2b2b2b;
+  --bg: #fff;
+}
+
+* { box-sizing: border-box; }
+html, body { padding: 0; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif; color: var(--text); background: var(--bg); }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.btn { display: inline-block; padding: 10px 16px; background: var(--color-accent); color: #fff; border-radius: 8px; border: none; cursor: pointer; }
+.btn--outline { background: transparent; color: var(--color-accent); border: 1px solid var(--color-accent); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+.card { background: #fff; border-radius: 10px; border: 1px solid #eee; padding: 12px; }
+.input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+label { font-weight: 600; display: block; margin-bottom: 6px; }
+.badge { display:inline-block; padding: 2px 8px; background: var(--color-mint); border-radius: 999px; font-size: 12px; }
