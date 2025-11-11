@@ -1,0 +1,116 @@
+<!-- =========================
+Файл: web/templates/index.html
+========================= -->
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>UC Web Starter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>UC — веб-стартер исследования и запуска</h1>
+
+    <div class="card">
+      <h2>Репозиторий</h2>
+      <div class="row">
+        <button id="btnClone">Clone / Update</button>
+        <button id="btnScan">Scan</button>
+        <button id="btnEntrypoints">Entrypoints</button>
+        <button id="btnHelp">Help</button>
+      </div>
+      <pre id="repoLog"></pre>
+    </div>
+
+    <div class="card">
+      <h2>Запуск команды</h2>
+      <div class="row">
+        <input id="cmdArgs" placeholder='args, например: "train --config data/configs/config.json"'>
+        <button id="btnRun">Run</button>
+      </div>
+      <div class="row">
+        <label>Подменить/добавить конфиг:</label>
+        <textarea id="configText" rows="6" placeholder='{"dataset": {"train": "data/datasets/train.csv"}}'></textarea>
+        <button id="btnEnsureCfg">Создать дефолтный config.json</button>
+      </div>
+      <pre id="runLog"></pre>
+    </div>
+
+    <div class="card">
+      <h2>Результаты</h2>
+      <pre id="out"></pre>
+    </div>
+  </div>
+
+  <script>
+    const out = document.getElementById('out');
+    const repoLog = document.getElementById('repoLog');
+    const runLog = document.getElementById('runLog');
+    const btnClone = document.getElementById('btnClone');
+    const btnScan = document.getElementById('btnScan');
+    const btnEntrypoints = document.getElementById('btnEntrypoints');
+    const btnHelp = document.getElementById('btnHelp');
+    const btnRun = document.getElementById('btnRun');
+    const cmdArgs = document.getElementById('cmdArgs');
+    const configText = document.getElementById('configText');
+    const btnEnsureCfg = document.getElementById('btnEnsureCfg');
+
+    async function getJSON(url) {
+      const r = await fetch(url);
+      return r.json();
+    }
+    async function postJSON(url, data) {
+      const r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+      return r.json();
+    }
+
+    btnClone.onclick = async () => {
+      out.textContent = '';
+      repoLog.textContent = 'Клонирую/обновляю...';
+      const res = await getJSON('/api/clone');
+      repoLog.textContent = JSON.stringify(res, null, 2);
+    };
+
+    btnScan.onclick = async () => {
+      out.textContent = 'Сканирую...';
+      const res = await getJSON('/api/scan');
+      out.textContent = JSON.stringify(res, null, 2);
+    };
+
+    btnEntrypoints.onclick = async () => {
+      out.textContent = 'Ищу entrypoints...';
+      const res = await getJSON('/api/entrypoints');
+      out.textContent = JSON.stringify(res, null, 2);
+    };
+
+    btnHelp.onclick = async () => {
+      out.textContent = 'Справка...';
+      // Если у вас есть entrypoint name или module, можно передать как query
+      const res = await getJSON('/api/help?entry=uc-train');
+      out.textContent = JSON.stringify(res, null, 2);
+    };
+
+    btnEnsureCfg.onclick = async () => {
+      out.textContent = 'Создаю дефолтный конфиг...';
+      const res = await getJSON('/api/ensure-default-configs');
+      out.textContent = JSON.stringify(res, null, 2);
+    };
+
+    btnRun.onclick = async () => {
+      runLog.textContent = 'Запускаю...';
+      const args = (cmdArgs.value || '').trim().split(/\s+/).filter(Boolean);
+      let cfg = {};
+      try {
+        cfg = configText.value.trim() ? JSON.parse(configText.value) : {};
+      } catch (e) {
+        runLog.textContent = 'Ошибка JSON в конфиге: ' + e;
+        return;
+      }
+      const res = await postJSON('/api/run', {args, config_files: cfg, timeout: 600});
+      runLog.textContent = JSON.stringify(res, null, 2);
+    };
+  </script>
+</body>
+</html>
