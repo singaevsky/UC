@@ -4,10 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import * as Sentry from '@sentry/nextjs';
 
-// ✅ Правильная инициализация Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // ✅ Используем service role для серверных операций
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { persistSession: false } }
 );
 
@@ -47,28 +46,40 @@ export async function GET(req: NextRequest) {
 // POST – создаём / обновляем черновик
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parsed = DraftSchema.safeParse(body);
+    // ✅ Безопасный парсинг JSON
+    let body: any;
+    try {
+      const text = await req.text();
+      if (!text.trim()) {
+        return NextResponse.json({ error: 'Request body is empty' }, { status: 400 });
+      }
+      body = JSON.parse(text);
+    } catch (parseError) {
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
 
+    const parsed = DraftSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
     const { userId, config } = parsed.data;
 
-    // upsert с правильной обработкой конфликта
+    // ✅ Валидация конфигурации
+    if (config && typeof config !== 'object') {
+      return NextResponse.json({ error: 'Config must be an object' }, { status: 400 });
+    }
+
+    // upsert
     const { data, error } = await supabase
       .from('draft_cakes')
       .upsert(
         {
           user_id: userId,
-          config,
+          config: config || {},
           updated_at: new Date().toISOString()
         },
-        {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        }
+        { onConflict: 'user_id' }
       )
       .select()
       .single();
