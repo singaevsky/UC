@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
 
   if (!parsed.success) {
     return NextResponse.json({
-      error: "Invalid config",
-      issues: parsed.error.issues
+      error: 'Invalid config',
+      issues: parsed.error.issues,
     }, { status: 400 });
   }
 
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ price });
   } catch (e) {
     return NextResponse.json({
-      error: "Calculation failed",
-      details: e instanceof Error ? e.message : "Unknown error"
+      error: 'Calculation failed',
+      details: e instanceof Error ? e.message : 'Unknown error',
     }, { status: 500 });
   }
 }

@@ -1,52 +1,53 @@
-import './globals.scss';
-import { createServerComponentClient, createServerActionClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { ReactNode } from 'react';
-import Header from './layout-header';
-import Footer from './layout-footer';
-import SeoHead from '@/components/SeoHead';
+// file: app/layout.tsx
+import type { Metadata } from 'next';
+import './globals.css';                     // Tailwind + пользовательские стили
+import LogRocket from '../lib/logrocket';   // инициализация LogRocket (один раз)
+import ServiceWorkerRegister from '../components/ServiceWorkerRegister';
 
-export const metadata = {
-  title: 'Уездный кондитер - свежие торты и десерты',
-  description: 'Интернет-магазин кондитерской "Уездный кондитер". Свежие торты, десерты и индивидуальные заказы. Конструктор тортов онлайн.'
+/* -------------------------------------------------------------------------- */
+/*                               Мета‑данные                                  */
+/* -------------------------------------------------------------------------- */
+export const metadata: Metadata = {
+  title: {
+    default: 'UC – Конструктор тортов',
+    template: '%s | UC',
+  },
+  description:
+    'Создайте уникальный торт с нашим интерактивным конструктором. Выбирайте форму, вкусы, декор и оформляйте заказ онлайн.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore });
-  const { data: { user } } = await supabase.auth.getUser();
-
+/* -------------------------------------------------------------------------- */
+/*                                   Лейаут                                   */
+/* -------------------------------------------------------------------------- */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
       <head>
-        <SeoHead />
-
-        {/* Yandex.Metrica */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-            ym(${process.env.YANDEX_METRIKA_ID || '00000000'}, "init", {
-                clickmap:true,
-                trackLinks:true,
-                accurateTrackBounce:true,
-                webvisor:true
-            });
-          `
-        }} />
+        {/* Предзагрузка шрифтов */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body>
-        <Header userEmail={user?.email ?? null} />
-        <main className="container">{children}</main>
-        <Footer />
 
-        {/* Noscript */}
-        <noscript>
-          <div><img src="https://mc.yandex.ru/watch/${process.env.YANDEX_METRIKA_ID || '00000000'}" style={{position:'absolute', left:'-9999px', alt:''}} /></div>
-        </noscript>
+      <body className="min-h-screen bg-slate-900 text-slate-100 antialiased font-sans">
+        {/* Регистрация Service Worker (только на клиенте) */}
+        <ServiceWorkerRegister />
+
+        {/* Основной контент страниц */}
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {children}
+        </main>
+
+        {/* Футер (по желанию) */}
+        <footer className="border-t border-slate-800 mt-10 py-6 text-center text-sm text-slate-400">
+          © {new Date().getFullYear()} UC. Все права защищены.
+        </footer>
       </body>
     </html>
   );

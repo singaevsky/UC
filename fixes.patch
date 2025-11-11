@@ -1,0 +1,273 @@
+diff --git a/app/hooks/useDraftCake.ts b/app/hooks/useDraftCake.ts
+index 1234567..abcdef0 100644
+--- a/app/hooks/useDraftCake.ts
++++ b/app/hooks/useDraftCake.ts
+@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
+-import { useDebounce } from '../shared/hooks/useDebounce';
++import { useDebounce } from '@/shared/hooks/useDebounce';
+ import { supabase } from '@/lib/supabaseClient';
+
+ type Draft = {
+diff --git a/app/api/price/route.ts b/app/api/price/route.ts
+index 7654321..fedcba9 100644
+--- a/app/api/price/route.ts
++++ b/app/api/price/route.ts
+@@ -1,6 +1,7 @@
+ import { NextRequest, NextResponse } from 'next/server';
++import { z } from 'zod';
+ import { calculatePrice } from '@/shared/lib/price/priceCalculator';
+
+ const PriceRequestSchema = z.object({
+@@ -22,7 +23,8 @@ export async function POST(req: NextRequest) {
+   } catch (e) {
+     return NextResponse.json({
+       error: "Calculation failed",
+-      details: e.message,
++      // Правильно приводим любой exception к строке
++      details: e instanceof Error ? e.message : 'Unknown error',
+     }, { status: 500 });
+   }
+ }
+diff --git a/app/constructor/page.tsx b/app/constructor/page.tsx
+index a1b2c3d..e4f5g6h 100644
+--- a/app/constructor/page.tsx
++++ b/app/constructor/page.tsx
+@@ -5,6 +5,7 @@ import { calculatePrice } from '@/shared/lib/price/priceCalculator';
+ import { useUser } from '@supabase/auth-helpers-react';
+ import { useDraftCake } from '@/hooks/useDraftCake';
++import { useState, useEffect, useMemo } from 'react';
+
+ export default function ConstructorPage() {
+   const { user } = useUser();
+@@ -23,15 +24,18 @@ export default function ConstructorPage() {
+   // Синхронизация с сервером
+-  useEffect(() => {
++  useEffect(() => {
+     const fetchPrice = async () => {
+       try {
+         const res = await fetch('/api/price', {
+@@ -49,8 +52,10 @@ export default function ConstructorPage() {
+   }, [config]);
+
+-  const clientPrice = calculatePrice(config);
+-  const displayedPrice = price || clientPrice;
++  const clientPrice = calculatePrice(config);
++  // nullish coalescing → если сервер ещё не вернул цену, берём клиентскую
++  const displayedPrice = price ?? clientPrice;
+
+   return (
+     <div className="price-widget">
+diff --git a/app/checkout/page.tsx b/app/checkout/page.tsx
+index 0a0b0c0..d1e2f3g 100644
+--- a/app/checkout/page.tsx
++++ b/app/checkout/page.tsx
+@@ -1,6 +1,7 @@
+ import { useState } from 'react';
+ import { useUser } from '@supabase/auth-helpers-react';
++import { AddressForm } from '@/components/checkout/AddressForm';
+
+ export default function CheckoutPage() {
+   const { user } = useUser();
+diff --git a/components/checkout/AddressForm.tsx b/components/checkout/AddressForm.tsx
+index 1234567..abcdef0 100644
+--- a/components/checkout/AddressForm.tsx
++++ b/components/checkout/AddressForm.tsx
+@@ -1,6 +1,7 @@
+ 'use client';
+ import { useState } from 'react';
++import { z } from 'zod';
+
+ const AddressSchema = z.object({
+diff --git a/app/api/cake/draft/route.ts b/app/api/cake/draft/route.ts
+index 7654321..fedcba9 100644
+--- a/app/api/cake/draft/route.ts
++++ b/app/api/cake/draft/route.ts
+@@ -1,6 +1,7 @@
+ import { NextRequest, NextResponse } from 'next/server';
+ import { createClient } from '@supabase/supabase-js';
++import { z } from 'zod';
+
+ const supabase = createClient(
+diff --git a/app/api/orders/route.ts b/app/api/orders/route.ts
+index abcdef0..1234567 100644
+--- a/app/api/orders/route.ts
++++ b/app/api/orders/route.ts
+@@ -1,5 +1,6 @@
+ import { NextRequest, NextResponse } from 'next/server';
+ import { createClient } from '@supabase/supabase-js';
++import { z } from 'zod';
+ import { calculatePrice } from '@/shared/lib/price/priceCalculator';
+
+ const supabase = createClient(
+diff --git a/lib/logrocket.ts b/lib/logrocket.ts
+index 5555555..6666666 100644
+--- a/lib/logrocket.ts
++++ b/lib/logrocket.ts
+@@ -1,6 +1,6 @@
+ import LogRocket from 'logrocket';
+
+-LogRocket.init(process.env.NEXT_PUBLIC_LOGROCKET_APP_ID || '');
++LogRocket.init(process.env.NEXT_PUBLIC_LOGROCKET_APP_ID || ''); // ← переменная должна быть в .env.local
+ LogRocket.identify('user-id-123', {
+   name: 'John Doe',
+   email: 'john.doe@example.com',
+diff --git a/.env.local b/.env.local
+index 7777777..8888888 100644
+--- a/.env.local
++++ b/.env.local
+@@ -0,0 +1,5 @@
++NEXT_PUBLIC_LOGROCKET_APP_ID=your_logrocket_app_id_here
++
+ # уже существующие переменные (Supabase, Sentry) оставляем без изменений
+diff --git a/public/sw.js b/public/sw.js
+index 0
+--- /dev/null
++++ b/public/sw.js
+@@ -0,0 +1,15 @@
++// Service Worker – кеширует GET‑запросы к API черновика
++self.addEventListener('fetch', (event) => {
++  const url = new URL(event.request.url);
++  if (event.request.method === 'GET' && url.pathname.startsWith('/api/cake/draft')) {
++    event.respondWith(
++      caches.open('draft-cache-v1').then(async cache => {
++        const cached = await cache.match(event.request);
++        const fetchPromise = fetch(event.request).then(response => {
++          cache.put(event.request, response.clone());
++          return response;
++        });
++        return cached || fetchPromise;
++      })
++    );
++  }
++});
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 1234567..abcdef0 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,6 +1,7 @@
+ import '../lib/logrocket'; // <-- подключаем LogRocket
++import { useState, useEffect } from 'react';
+
+ export default function RootLayout({ children }: { children: React.ReactNode }) {
+   return (
+     <html lang="ru">
+diff --git a/shared/lib/price/priceCalculator.ts b/shared/lib/price/priceCalculator.ts
+index abcdef0..1234567 100644
+--- a/shared/lib/price/priceCalculator.ts
++++ b/shared/lib/price/priceCalculator.ts
+@@ -1,4 +1,12 @@
++export type CakeConfig = {
++  layers: Array<{
++    type: 'biscuit' | 'cream' | 'topping';
++    size: number; // см
++  }>;
++  shape: 'round' | 'square';
++  decorations: number;
++};
++
+ export function calculatePrice(cfg: CakeConfig): number {
+   const basePrice = 1000; // база
+   const layerCost = cfg.layers.reduce((sum, layer) => {
+diff --git a/supabase/migrations/20250905_draft_cakes.sql b/supabase/migrations/20250905_draft_cakes.sql
+index abcdef0..1234567 100644
+--- a/supabase/migrations/20250905_draft_cakes.sql
++++ b/supabase/migrations/20250905_draft_cakes.sql
+@@ -4,7 +4,7 @@ create table if not exists public.draft_cakes (
+   user_id uuid not null references auth.users (id) on delete cascade,
+   config jsonb not null default '{}'::jsonb,
+   created_at timestamptz default now(),
+-  updated_at timestamptz default now()
++  updated_at timestamptz default now(),
++  -- Явное указание каскадного удаления, если понадобится связать другие таблицы
++  constraint fk_draft_user foreign key (user_id) references auth.users (id) on delete cascade
+ );
+
+ create index if not exists draft_cakes_user_id_idx on public.draft_cakes (user_id);
+diff --git a/app/hooks/useOptimizedDraft.ts b/app/hooks/useOptimizedDraft.ts
+new file mode 100644
+index 0
+--- /dev/null
++++ b/app/hooks/useOptimizedDraft.ts
+@@ -0,0 +1,48 @@
++'use client';
++import { useRef, useState, useEffect } from 'react';
++import { useDebounce } from '@/shared/hooks/useDebounce';
++
++/**
++ * Хук оптимизирует автосохранение черновика:
++ *   - debounce 30 сек
++ *   - сравнивает строку‑сериализованный конфиг, чтобы избежать лишних запросов
++ *   - атомарно обновляет объект в state
++ */
++export function useOptimizedDraft(userId?: string) {
++  const [draft, setDraft] = useState<any>(null);
++  const [saving, setSaving] = useState(false);
++  const prevConfig = useRef<string>('');
++  const debouncedConfig = useDebounce(draft?.config ?? {}, 30_000);
++
++  const load = async () => {
++    if (!userId) return;
++    const res = await fetch(`/api/cake/draft?userId=${userId}`);
++    const data = await res.json();
++    setDraft(data.draft);
++    prevConfig.current = JSON.stringify(data.draft?.config ?? {});
++  };
++
++  const save = async (config: any) => {
++    const configStr = JSON.stringify(config);
++    if (configStr === prevConfig.current) return;
++    prevConfig.current = configStr;
++    setSaving(true);
++    try {
++      await fetch('/api/cake/draft', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ userId, config }),
++      });
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  // При изменении debounced‑конфига → автосохранение
++  useEffect(() => {
++    if (!userId) return;
++    if (debouncedConfig) {
++      save(debouncedConfig);
++    }
++  }, [debouncedConfig, userId]);
++
++  return { draft, saving, load, setDraft };
++}
+diff --git a/app/preview/[id]/page.tsx b/app/preview/[id]/page.tsx
+index 1111111..2222222 100644
+--- a/app/preview/[id]/page.tsx
++++ b/app/preview/[id]/page.tsx
+@@ -1,7 +1,8 @@
++import { unstable_noStore as noStore, revalidateTag } from 'next/cache';
+ import { notFound } from 'next/navigation';
+ import { createClient } from '@supabase/supabase-js';
+ import Image from 'next/image';
++import { getPublicImageUrl } from '@/shared/utils/images';
+
+ const supabase = createClient(
+   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+ );
+
+-export default async function PreviewPage({ params }: { params: { id: string } }) {
++export default async function PreviewPage({ params }: { params: { id: string } }) {
+   noStore(); // <-- отключаем кеш, но ниже используем теги для ISR
+   // Перезагружаем данные каждый раз, но с тегом – можно вручную revalidate через API
+   // @ts-ignore
+   revalidateTag('draft');
+diff --git a/app/api/price/route.ts b/app/api/price/route.ts
+index abcdef0..1111111 100644
+--- a/app/api/price/route.ts
++++ b/app/api/price/route.ts
+@@ -1,6 +1,7 @@
+ import { NextRequest, NextResponse } from 'next/server';
++import { z } from 'zod';
+ import { calculatePrice } from '@/shared/lib/price/priceCalculator';
+
+ const PriceRequestSchema = z.object({
