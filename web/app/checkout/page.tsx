@@ -5,7 +5,36 @@ import { getClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { PriceCalculator } from '@/lib/price-calculator';
 import FadeIn from '@/components/animations/FadeIn';
+import { AddressForm } from '@/components/checkout/AddressForm';
 
+export default function CheckoutPage() {
+  const [deliveryType, setDeliveryType] = useState<'pickup' | 'courier'>('pickup');
+  const [validAddress, setValidAddress] = useState(null);
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label>Тип доставки</label>
+        <select
+          className="border p-2 rounded"
+          value={deliveryType}
+          onChange={(e) => setDeliveryType(e.target.value as any)}
+        >
+          <option value="pickup">Самовывоз</option>
+          <option value="courier">Курьер</option>
+        </select>
+      </div>
+
+      {deliveryType === 'courier' && (
+        <AddressForm
+          onValid={(address) => setValidAddress(address)}
+        />
+      )}
+
+      {/* Дальше — форма с validAddress, если курьер */}
+    </div>
+  );
+}
 type Address = {
   city: string;
   street: string;

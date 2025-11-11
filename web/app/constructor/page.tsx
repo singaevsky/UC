@@ -8,6 +8,44 @@ import FormSelector from '@/components/constructor/FormSelector';
 import ToppingSelector from '@/components/constructor/ToppingSelector';
 import ColorSelector from '@/components/constructor/ColorSelector';
 import Preview from '@/components/constructor/Preview';
+// file: app/constructor/page.tsx (фрагмент)
+import { useState, useEffect } from 'react';
+import { calculatePrice } from '@/shared/lib/price/priceCalculator';
+
+export default function ConstructorPage() {
+  const [config, setConfig] = useState({});
+  const [price, setPrice] = useState(0);
+
+  // Синхронизация с сервером
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch('/api/price', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config }),
+        });
+        const data = await res.json();
+        if (res.ok) setPrice(data.price);
+        else console.error('Server price calc failed:', data.error);
+      } catch (e) {
+        console.error('Network error', e);
+      }
+    };
+
+    fetchPrice();
+  }, [config]);
+
+  // Клиентский расчёт как фолбэк
+  const clientPrice = calculatePrice(config);
+  const displayedPrice = price || clientPrice;
+
+  return (
+    <div className="price-widget">
+      <p>Расчётная цена: {displayedPrice} ₽</p>
+    </div>
+  );
+}
 
 const eventOptions = [
   { value: 'wedding', label: 'Свадьба' },
