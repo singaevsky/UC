@@ -1,6 +1,6 @@
-// file: .eslintrc.js
-const { FlatCompat } = require('@eslint/eslintrc');
+// file: eslint.config.js
 const js = require('@eslint/js');
+const { FlatCompat } = require('@eslint/eslintrc');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -28,7 +28,7 @@ module.exports = [
     },
 
     rules: {
-      // ✅ TypeScript специфичные правила
+      // TypeScript правила
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -38,29 +38,17 @@ module.exports = [
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/prefer-const': 'error',
-      '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/no-inferrable-types': 'off',
-      '@typescript-eslint/no-empty-function': 'warn',
-      '@typescript-eslint/ban-ts-comment': [
-        'error',
-        {
-          'ts-ignore': 'allow-with-description',
-          'ts-nocheck': true,
-        },
-      ],
 
-      // ✅ Import/Export правила
+      // Import правила
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
       'import/first': 'error',
       'import/newline-after-import': 'error',
       'import/no-duplicates': 'error',
 
-      // ✅ Unused imports
+      // Unused imports
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
         'error',
@@ -72,79 +60,39 @@ module.exports = [
         },
       ],
 
-      // ✅ Общие правила качества кода
+      // Общие правила
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
-      'no-alert': 'error',
       'no-var': 'error',
       'prefer-const': 'error',
       'prefer-arrow-callback': 'error',
-      'arrow-body-style': ['error', 'as-needed'],
       'no-duplicate-imports': 'error',
-      'no-unused-vars': 'off', // Заменено на TypeScript версию
 
-      // ✅ React специфичные правила
-      'react/jsx-uses-react': 'off',
-      'react/react-in-jsx-scope': 'off',
+      // React
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'react/jsx-props-no-spreading': 'off',
-      'react/jsx-filename-extension': [
-        'error',
-        {
-          extensions: ['.tsx'],
-        },
-      ],
 
-      // ✅ Next.js специфичные правила
-      '@next/next/no-html-link-for-pages': 'off',
-
-      // ✅ Правила для тестов
-      ...compat.plugins('jest', 'testing-library').configs.recommended.rules,
-
-      // ✅ Правила для promises
-      'prefer-promise-reject-errors': 'error',
-
-      // ✅ Правила для accessibility
+      // Accessibility
       'jsx-a11y/alt-text': 'error',
       'jsx-a11y/anchor-has-content': 'error',
       'jsx-a11y/aria-props': 'error',
-      'jsx-a11y/aria-proptypes': 'error',
-      'jsx-a11y/aria-unsupported-elements': 'error',
-      'jsx-a11y/role-has-required-aria-props': 'error',
-      'jsx-a11y/role-supports-aria-props': 'error',
       'jsx-a11y/img-redundant-alt': 'error',
-      'jsx-a11y/no-autofocus': 'warn',
       'jsx-a11y/click-events-have-key-events': 'error',
       'jsx-a11y/no-static-element-interactions': 'error',
 
-      // ✅ Стилистические правила
+      // Стилистические
       'object-shorthand': 'error',
       'prefer-template': 'error',
-      'template-curly-spacing': ['error', 'never'],
       'arrow-spacing': 'error',
       'comma-dangle': ['error', 'always-multiline'],
-      'comma-spacing': ['error', { before: false, after: true }],
-      'comma-style': ['error', 'last'],
-      'computed-property-spacing': ['error', 'never'],
-      'func-call-spacing': ['error', 'never'],
-      'indent': ['error', 2, { SwitchCase: 1 }],
-      'key-spacing': ['error', { beforeColon: false, afterColon: true }],
-      'keyword-spacing': 'error',
-      'no-multiple-empty-lines': ['error', { max: 1 }],
-      'no-trailing-spaces': 'error',
-      'no-whitespace-before-property': 'error',
-      'object-curly-spacing': ['error', 'always'],
       'quotes': ['error', 'single', { avoidEscape: true }],
       'semi': ['error', 'always'],
       'space-before-blocks': 'error',
       'space-in-parens': ['error', 'never'],
-      'space-infix-ops': 'error',
       'spaced-comment': ['error', 'always'],
     },
   },
 
-  // ✅ Игнорируемые файлы
   {
     ignores: [
       '**/node_modules/**',
@@ -162,8 +110,6 @@ module.exports = [
       '**/migrations/**',
       '**/*.d.ts',
       '**/public/**',
-      '**/.vscode/**',
-      '**/.idea/**',
     ],
   },
 ];

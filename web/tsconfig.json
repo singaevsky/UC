@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "es6"],
+    // ✅ Базовые настройки
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es2022"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,11 +19,89 @@
         "name": "next"
       }
     ],
+
+    // ✅ Пути для импортов
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/app/*": ["./src/app/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/utils/*": ["./src/utils/*"]
+    },
+
+    // ✅ Строгие проверки
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    // ✅ Проверки качества кода
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    // ✅ Модули
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // ✅ Source maps
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // ✅ Дополнительные настройки
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitAnyGenerics": true,
+    "noStrictGenericChecks": false,
+    "suppressImplicitAnyIndexErrors": false,
+
+    // ✅ Module resolution
+    "allowUmdGlobalAccess": false,
+    "moduleDetection": "force",
+
+    // ✅ JSX
+    "jsxImportSource": "@emotion/react",
+
+    // ✅ Emit
+    "removeComments": false,
+    "preserveConstEnums": true,
+
+    // ✅ Experimental
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "dist",
+    "build",
+    "coverage",
+    "*.config.js",
+    "*.config.ts",
+    "jest.config.js",
+    "tailwind.config.js",
+    "postcss.config.js"
+  ],
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "module": "esnext"
+    }
+  }
 }
