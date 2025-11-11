@@ -1,141 +1,196 @@
-      reviews: {
+      posts: {
         Row: {
           id: number
-          product_id: number | null
-          confectioner_id: string | null
-          shop_id: number | null
-          brand_review: boolean
-          user_id: string | null
-          review_type: string
-          rating: number
-          text: string | null
-          image_url: string | null
-          photos: string[]
+          title: string
+          slug: string
+          excerpt: string | null
+          content: string | null
+          cover_url: string | null
           status: string
+          published_at: string | null
           created_at: string
-          updated_at: string
-          admin_response: string | null
-          admin_responded_at: string | null
-          admin_responded_by: string | null
-          is_featured: boolean
-          helpful_votes: number
-          reported_count: number
-          order_id: number | null
-          verified_purchase: boolean
+          author_id: string | null
+          category_id: number | null
+          tags: string[]
+          featured: boolean
+          views_count: number
+          likes_count: number
+          reading_time: number | null
+          meta_title: string | null
+          meta_description: string | null
+          cover_alt: string | null
+          updated_by: string | null
+          updated_at: string | null
         }
         Insert: {
           id?: number
-          product_id?: number | null
-          confectioner_id?: string | null
-          shop_id?: number | null
-          brand_review?: boolean
-          user_id?: string | null
-          review_type?: string
-          rating: number
-          text?: string | null
-          image_url?: string | null
-          photos?: string[]
+          title: string
+          slug: string
+          excerpt?: string | null
+          content?: string | null
+          cover_url?: string | null
           status?: string
+          published_at?: string | null
           created_at?: string
-          updated_at?: string
-          admin_response?: string | null
-          admin_responded_at?: string | null
-          admin_responded_by?: string | null
-          is_featured?: boolean
-          helpful_votes?: number
-          reported_count?: number
-          order_id?: number | null
-          verified_purchase?: boolean
+          author_id?: string | null
+          category_id?: number | null
+          tags?: string[]
+          featured?: boolean
+          views_count?: number
+          likes_count?: number
+          reading_time?: number | null
+          meta_title?: string | null
+          meta_description?: string | null
+          cover_alt?: string | null
+          updated_by?: string | null
+          updated_at?: string | null
         }
         Update: {
           id?: number
-          product_id?: number | null
-          confectioner_id?: string | null
-          shop_id?: number | null
-          brand_review?: boolean
-          user_id?: string | null
-          review_type?: string
-          rating?: number
-          text?: string | null
-          image_url?: string | null
-          photos?: string[]
+          title?: string
+          slug?: string
+          excerpt?: string | null
+          content?: string | null
+          cover_url?: string | null
           status?: string
+          published_at?: string | null
           created_at?: string
-          updated_at?: string
-          admin_response?: string | null
-          admin_responded_at?: string | null
-          admin_responded_by?: string | null
-          is_featured?: boolean
-          helpful_votes?: number
-          reported_count?: number
-          order_id?: number | null
-          verified_purchase?: boolean
+          author_id?: string | null
+          category_id?: number | null
+          tags?: string[]
+          featured?: boolean
+          views_count?: number
+          likes_count?: number
+          reading_time?: number | null
+          meta_title?: string | null
+          meta_description?: string | null
+          cover_alt?: string | null
+          updated_by?: string | null
+          updated_at?: string | null
         }
       }
-      review_reports: {
+      blog_categories: {
         Row: {
           id: number
-          review_id: number
-          reporter_id: string | null
-          reason: string
+          name: string
+          slug: string
           description: string | null
-          status: string
-          admin_notes: string | null
+          color: string
           created_at: string
-          reviewed_at: string | null
-          reviewed_by: string | null
         }
         Insert: {
           id?: number
-          review_id: number
-          reporter_id?: string | null
-          reason: string
+          name: string
+          slug: string
           description?: string | null
-          status?: string
-          admin_notes?: string | null
+          color?: string
           created_at?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
         }
         Update: {
           id?: number
-          review_id?: number
-          reporter_id?: string | null
-          reason?: string
+          name?: string
+          slug?: string
           description?: string | null
-          status?: string
-          admin_notes?: string | null
+          color?: string
           created_at?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
         }
       }
-      review_responses: {
+      post_comments: {
         Row: {
           id: number
-          review_id: number
-          responder_id: string
+          post_id: number
+          user_id: string | null
+          parent_id: number | null
           content: string
-          is_admin_response: boolean
+          status: string
           created_at: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           id?: number
-          review_id: number
-          responder_id: string
+          post_id: number
+          user_id?: string | null
+          parent_id?: number | null
           content: string
-          is_admin_response?: boolean
+          status?: string
           created_at?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           id?: number
-          review_id?: number
-          responder_id?: string
+          post_id?: number
+          user_id?: string | null
+          parent_id?: number | null
           content?: string
-          is_admin_response?: boolean
+          status?: string
           created_at?: string
-          updated_at?: string
+          updated_at?: string | null
+        }
+      }
+      faq_items: {
+        Row: {
+          id: number
+          category: string
+          question: string
+          answer: string
+          order_index: number
+          is_active: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          category: string
+          question: string
+          answer: string
+          order_index?: number
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          category?: string
+          question?: string
+          answer?: string
+          order_index?: number
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      blog_media: {
+        Row: {
+          id: number
+          post_id: number
+          file_url: string
+          file_name: string
+          file_type: string
+          file_size: number | null
+          alt_text: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          post_id: number
+          file_url: string
+          file_name: string
+          file_type: string
+          file_size?: number | null
+          alt_text?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          post_id?: number
+          file_url?: string
+          file_name?: string
+          file_type?: string
+          file_size?: number | null
+          alt_text?: string | null
+          created_at?: string
         }
       }

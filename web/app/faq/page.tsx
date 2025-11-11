@@ -1,8 +1,222 @@
-export default function FAQPage() {
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { useState } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import FadeIn from '@/components/animations/FadeIn';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import type { FaqItem } from '@/types/blog';
+
+export const metadata = {
+  title: 'FAQ - Часто задаваемые вопросы',
+  description: 'Ответы на самые частые вопросы о наших товарах и услугах'
+};
+
+export default async function FAQPage() {
+  const supabase = createServerComponentClient({ cookies });
+
+  const { data: faqItems } = await supabase
+    .from('faq_items')
+    .select('*')
+    .eq('is_active', true)
+    .order('category', { ascending: true })
+    .order('order_index', { ascending: true });
+
+  // Группируем FAQ по категориям
+  const faqByCategory = faqItems?.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
+    }
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, FaqItem[]>) || {};
+
+  const getCategoryTitle = (category: string) => {
+    switch (category) {
+      case 'general': return 'Общие вопросы';
+      case 'delivery': return 'Доставка';
+      case 'products': return 'Товары и услуги';
+      case 'payment': return 'Оплата';
+      case 'custom': return 'Индивидуальные заказы';
+      default: return category;
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'general': return '❓';
+      case 'delivery': return '🚚';
+      case 'products': return '🍰';
+      case 'payment': return '💳';
+      case 'custom': return '🎨';
+      default: return '❓';
+    }
+  };
+
   return (
-    <div>
-      <h1>Частые вопросы</h1>
-      <p><b>Как заказать торт на конкретную дату?</b> — Укажите дату события в конструкторе или в комментариях при оформлении заказа.</p>
+    <FadeIn>
+      <div className="mb-4">
+        <h1>Часто задаваемые вопросы</h1>
+        <p>Здесь вы найдете ответы на самые популярные вопросы о наших товарах и услугах</p>
+      </div>
+
+      <div className="grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        {/* FAQ по категориям */}
+        <div className="space-y-4">
+          {Object.entries(faqByCategory).map(([category, items]) => (
+            <FadeIn key={category}>
+              <Card>
+                <CardHeader>
+                  <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>{getCategoryIcon(category)}</span>
+                    {getCategoryTitle(category)}
+                    <span className="badge">{items.length}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {items.map((item) => (
+                      <FAQItem key={item.id} item={item} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </FadeIn>
+          ))}
+        </div>
+
+        {/* Боковая панель */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Не нашли ответ?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p style={{ marginBottom: '12px' }}>
+                Свяжитесь с нами, и мы поможем вам!
+              </p>
+              <div className="space-y-2">
+                <a href="tel:+79990000000" className="btn" style={{ width: '100%', textAlign: 'center' }}>
+                  📞 Позвонить
+                </a>
+                <a href="mailto:hello@konditer.ru" className="btn--outline" style={{ width: '100%', textAlign: 'center' }}>
+                  ✉️ Написать
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Популярные вопросы</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {faqItems?.slice(0, 5).map((item) => (
+                  <a
+                    key={item.id}
+                    href={`#faq-${item.id}`}
+                    style={{
+                      display: 'block',
+                      padding: '8px',
+                      color: 'var(--color-accent)',
+                      textDecoration: 'none',
+                      borderRadius: '4px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-cream)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    {item.question}
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Категории</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(faqByCategory).map(([category, items]) => (
+                  <a
+                    key={category}
+                    href={`#category-${category}`}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px',
+                      color: 'var(--text)',
+                      textDecoration: 'none',
+                      borderRadius: '4px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-cream)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <span>{getCategoryTitle(category)}</span>
+                    <span className="badge">{items.length}</span>
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </FadeIn>
+  );
+}
+
+function FAQItem({ item }: { item: FaqItem }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const supabase = createClientComponentClient();
+
+  return (
+    <div id={`faq-${item.id}`} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          background: 'none',
+          border: 'none',
+          padding: '8px 0',
+          cursor: 'pointer',
+          fontSize: '16px',
+          fontWeight: '600',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <span>{item.question}</span>
+        <span style={{
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s'
+        }}>
+          ▼
+        </span>
+      </button>
+
+      {isOpen && (
+        <div style={{
+          padding: '12px',
+          background: 'var(--color-cream)',
+          borderRadius: '8px',
+          marginTop: '8px',
+          lineHeight: 1.6
+        }}>
+          <div dangerouslySetInnerHTML={{ __html: item.answer }} />
+        </div>
+      )}
     </div>
   );
 }
