@@ -1,163 +1,423 @@
-// === PATCH FILE: fixes.patch ===
-// This file contains all changes to implement recommended improvements
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 1234567..abcdef0 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,5 +1,6 @@
+ import type { Metadata } from 'next'
+ import './globals.css'
++import '../lib/logrocket'
 
-// 1. Add LogRocket integration
-// file: app/layout.tsx
-+ import '../lib/logrocket';
-
-// 2. Add draft history table
-// file: supabase/migrations/20250912_draft_history.sql
-+ create table if not exists public.draft_cakes_history (
-+   id uuid primary key default gen_random_uuid(),
-+   draft_id uuid references public.draft_cakes(id) on delete cascade,
-+   config jsonb not null,
-+   created_at timestamptz default now()
-+ );
+ export const metadata: Metadata = {
+   title: 'UC',
+   description: 'UC App',
+diff --git a/lib/logrocket.ts b/lib/logrocket.ts
+new file mode 100644
+index 0000000..d7b6e1b
+--- /dev/null
++++ b/lib/logrocket.ts
+@@ -0,0 +1,10 @@
++import LogRocket from 'logrocket';
 +
-+ create index if not exists draft_history_draft_id_idx on public.draft_cakes_history(draft_id);
-
-// 3. Implement caching for preview page
-// file: app/preview/[id]/page.tsx
-+ import { unstable_noStore as noStore, revalidateTag } from 'next/cache';
++if (process.env.NODE_ENV === 'production') {
++  LogRocket.init(process.env.NEXT_PUBLIC_LOGROCKET_APP_ID || '');
 +
-+ export default async function PreviewPage({ params }: { params: { id: string } }) {
-+   noStore(); // отключаем кеш для актуальности
-   // ... existing code
++  // Identify the user after login – replace the placeholders with real values
++  // LogRocket.identify('user-id-123', { name: 'John Doe', email: 'john.doe@example.com' });
++}
++
++export default LogRocket;
+diff --git a/supabase/migrations/20250912_draft_history.sql b/supabase/migrations/20250912_draft_history.sql
+new file mode 100644
+index 0000000..4c1e4f3
+--- /dev/null
++++ b/supabase/migrations/20250912_draft_history.sql
+@@ -0,0 +1,9 @@
++-- Create table for draft history
++create table if not exists public.draft_cakes_history (
++  id uuid primary key default gen_random_uuid(),
++  draft_id uuid references public.draft_cakes(id) on delete cascade,
++  config jsonb not null,
++  created_at timestamptz default now()
++);
++
++create index if not exists draft_history_draft_id_idx on public.draft_cakes_history(draft_id);
+diff --git a/app/preview/[id]/page.tsx b/app/preview/[id]/page.tsx
+index 7f0a2c1..4e27e9d 100644
+--- a/app/preview/[id]/page.tsx
++++ b/app/preview/[id]/page.tsx
+@@ -1,7 +1,9 @@
++import { unstable_noStore as noStore } from 'next/cache';
+ import { notFound } from 'next/navigation';
+ import { createClient } from '@supabase/supabase-js';
+ import Image from 'next/image';
+
+ export default async function PreviewPage({ params }: { params: { id: string } }) {
++  noStore();                     // do NOT cache preview content
+   const { data: draft, error } = await supabase
+     .from('draft_cakes')
+     .select('*')
+diff --git a/app/api/test-error/route.ts b/app/api/test-error/route.ts
+new file mode 100644
+index 0000000..c8a6b45
+--- /dev/null
++++ b/app/api/test-error/route.ts
+@@ -0,0 +1,9 @@
++import * as Sentry from '@sentry/nextjs';
++
++// Simple endpoint to test Sentry integration
++export async function GET() {
++  Sentry.captureException(new Error('Test Sentry error'));
++  return new Response('Test error triggered', { status: 500 });
++}
++
++export const dynamic = 'force-dynamic';
+diff --git a/shared/hooks/useDebounce.ts b/shared/hooks/useDebounce.ts
+new file mode 100644
+index 0000000..f1e8b0a
+--- /dev/null
++++ b/shared/hooks/useDebounce.ts
+@@ -0,0 +1,9 @@
++'use client';
++import { useEffect, useState } from 'react';
++
++export function useDebounce<T>(value: T, delay: number) {
++  const [debounced, setDebounced] = useState(value);
++  useEffect(() => {
++    const id = setTimeout(() => setDebounced(value), delay);
++    return () => clearTimeout(id);
++  }, [value, delay]);
++  return debounced;
++}
+diff --git a/app/hooks/useOptimizedDraft.ts b/app/hooks/useOptimizedDraft.ts
+new file mode 100644
+index 0000000..d8b2ef9
+--- /dev/null
++++ b/app/hooks/useOptimizedDraft.ts
+@@ -0,0 +1,36 @@
++'use client';
++import { useRef, useEffect, useState } from 'react';
++import { useDebounce } from '@/shared/hooks/useDebounce';
++import { supabase } from '@/lib/supabaseClient';
++
++type Draft = {
++  id: string;
++  user_id: string;
++  config: Record<string, any>;
++  created_at: string;
++  updated_at: string;
++};
++
++export function useOptimizedDraft(userId?: string) {
++  const [draft, setDraft] = useState<Draft | null>(null);
++  const [saving, setSaving] = useState(false);
++  const prevConfig = useRef<string>('');
++  const debouncedConfig = useDebounce(draft?.config ?? {}, 30_000);
++
++  // load existing draft once
++  useEffect(() => {
++    if (!userId) return;
++    (async () => {
++      const res = await fetch(`/api/cake/draft?userId=${userId}`);
++      const json = await res.json();
++      setDraft(json.draft);
++      prevConfig.current = JSON.stringify(json.draft?.config ?? {});
++    })();
++  }, [userId]);
++
++  // save only when the debounced config actually changes
++  useEffect(() => {
++    if (!userId || !debouncedConfig) return;
++    const configStr = JSON.stringify(debouncedConfig);
++    if (configStr !== prevConfig.current) {
++      setSaving(true);
++      fetch('/api/cake/draft', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ userId, config: debouncedConfig }),
++      }).finally(() => setSaving(false));
++      prevConfig.current = configStr;
++    }
++  }, [debouncedConfig, userId]);
++
++  return { draft, saving, setDraft };
++}
+diff --git a/app/api/price/route.ts b/app/api/price/route.ts
+new file mode 100644
+index 0000000..c10b4e4
+--- /dev/null
++++ b/app/api/price/route.ts
+@@ -0,0 +1,17 @@
++import { NextRequest, NextResponse } from 'next/server';
++import { z } from 'zod';
++import { calculatePrice } from '@/shared/lib/price/priceCalculator';
++
++const PriceRequestSchema = z.object({
++  config: z.record(z.any()),
++});
++
++export async function POST(req: NextRequest) {
++  const body = await req.json();
++  const parsed = PriceRequestSchema.safeParse(body);
++  if (!parsed.success) {
++    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
++  }
++  const price = calculatePrice(parsed.data.config);
++  return NextResponse.json({ price });
++}
+diff --git a/app/constructor/page.tsx b/app/constructor/page.tsx
+index 2d2a8f4..a3a4d0c 100644
+--- a/app/constructor/page.tsx
++++ b/app/constructor/page.tsx
+@@ -1,8 +1,10 @@
+ 'use client';
+ import { useState, useEffect, useMemo } from 'react';
++import { useOptimizedDraft } from '@/app/hooks/useOptimizedDraft';
+ import { calculatePrice } from '@/shared/lib/price/priceCalculator';
+
+ export default function ConstructorPage() {
++  const { user } = useUser(); // assuming a `useUser` hook exists
++  const { draft, saving, setDraft } = useOptimizedDraft(user?.id);
+   const [config, setConfig] = useState<Record<string, any>>({});
+   const [price, setPrice] = useState<number>(0);
+@@ -10,6 +12,14 @@
+   // obtain a server‑side price for the current config
+   useEffect(() => {
+     const fetchPrice = async () => {
++      const response = await fetch('/api/price', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ config }),
++      });
++      const data = await response.json();
++      if (response.ok) setPrice(data.price);
++      else console.error('Price calculation error:', data.error);
++    };
++    fetchPrice();
++  }, [config]);
++
++  // fallback – client side calculation
+   const clientPrice = useMemo(() => calculatePrice(config), [config]);
+   const displayedPrice = price || clientPrice;
+diff --git a/components/checkout/AddressForm.tsx b/components/checkout/AddressForm.tsx
+new file mode 100644
+index 0000000..4a1c2a0
+--- /dev/null
++++ b/components/checkout/AddressForm.tsx
+@@ -0,0 +1,59 @@
++'use client';
++import { useState } from 'react';
++import { z } from 'zod';
++
++const AddressSchema = z.object({
++  city: z.string().min(2, 'Минимум 2 символа'),
++  street: z.string().min(2, 'Минимум 2 символа'),
++  house: z.string().min(1, 'Обязательное поле'),
++  apartment: z.string().optional(),
++});
++
++type Address = z.infer<typeof AddressSchema>;
++
++export function AddressForm({ onValid }: { onValid: (addr: Address) => void }) {
++  const [address, setAddress] = useState<Address>({ city: '', street: '', house: '', apartment: '' });
++  const [errors, setErrors] = useState<Record<string, string>>({});
++
++  const handleValidate = () => {
++    const result = AddressSchema.safeParse(address);
++    if (!result.success) {
++      const errs: Record<string, string> = {};
++      for (const issue of result.error.issues) {
++        const key = issue.path[0] as string;
++        errs[key] = issue.message;
++      }
++      setErrors(errs);
++      return;
++    }
++    setErrors({});
++    onValid(result.data);
++  };
++
++  return (
++    <div className="space-y-3">
++      <div>
++        <label>Город</label>
++        <input
++          className={`border p-2 rounded w-full ${errors.city ? 'border-red-500' : ''}`}
++          value={address.city}
++          onChange={(e) => setAddress({ ...address, city: e.target.value })}
++        />
++        {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
++      </div>
++      <div>
++        <label>Улица</label>
++        <input
++          className={`border p-2 rounded w-full ${errors.street ? 'border-red-500' : ''}`}
++          value={address.street}
++          onChange={(e) => setAddress({ ...address, street: e.target.value })}
++        />
++        {errors.street && <p className="text-red-500 text-sm">{errors.street}</p>}
++      </div>
++      <div>
++        <label>Дом</label>
++        <input
++          className={`border p-2 rounded w-full ${errors.house ? 'border-red-500' : ''}`}
++          value={address.house}
++          onChange={(e) => setAddress({ ...address, house: e.target.value })}
++        />
++        {errors.house && <p className="text-red-500 text-sm">{errors.house}</p>}
++      </div>
++      <div>
++        <label>Квартира (опционально)</label>
++        <input
++          className="border p-2 rounded w-full"
++          value={address.apartment}
++          onChange={(e) => setAddress({ ...address, apartment: e.target.value })}
++        />
++      </div>
++      <button
++        type="button"
++        className="bg-blue-600 text-white px-4 py-2 rounded"
++        onClick={handleValidate}
++      >
++        Проверить адрес
++      </button>
++    </div>
++  );
++}
+diff --git a/app/checkout/page.tsx b/app/checkout/page.tsx
+index 7e95d3c..6d0bc5e 100644
+--- a/app/checkout/page.tsx
++++ b/app/checkout/page.tsx
+@@ -1,9 +1,13 @@
+ 'use client';
+ import { useState } from 'react';
++import { AddressForm } from '@/components/checkout/AddressForm';
+ import { useUser } from '@supabase/auth-helpers-react';
+
+ export default function CheckoutPage() {
+   const { user } = useUser();
+   const [deliveryType, setDeliveryType] = useState<'pickup' | 'courier'>('pickup');
++  const [validAddress, setValidAddress] = useState<any>(null);
++  const [orderLoading, setOrderLoading] = useState(false);
+
+   const handleCreateOrder = async () => {
++    setOrderLoading(true);
++    const payload = {
++      userId: user?.id,
++      delivery_type: deliveryType,
++      ...(deliveryType === 'courier'
++        ? { delivery_address: `${validAddress.city}, ${validAddress.street} ${validAddress.house}` }
++        : {}),
++      cake_config: /* the current cake config from the constructor */ {},
++    };
++    const resp = await fetch('/api/orders', {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify(payload),
++    });
++    const data = await resp.json();
++    setOrderLoading(false);
++    if (resp.ok) {
++      window.location.href = `/order-confirmation/${data.order.id}`;
++    } else {
++      alert(data.error || 'Failed to create order');
++    }
++  };
+@@ -11,6 +15,9 @@
+   return (
+     <div className="max-w-xl mx-auto p-6">
+       <h1 className="text-2xl font-bold mb-4">Оформление заказа</h1>
+       <div>
++        <label className="block mb-1">Тип доставки</label>
++        <select className="border p-2 rounded mb-4" value={deliveryType} onChange={(e) => setDeliveryType(e.target.value as any)}>
++          <option value="pickup">Самовывоз</option>
++          <option value="courier">Курьер</option>
++        </select>
++        {deliveryType === 'courier' && <AddressForm onValid={setValidAddress} />}
++        <button
++          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
++          onClick={handleCreateOrder}
++          disabled={orderLoading}
++        >
++          {orderLoading ? 'Создаём…' : 'Создать заказ'}
++        </button>
+       </div>
+     </div>
+   );
  }
-
-// 4. Add test error endpoint
-// file: app/api/test-error/route.ts
-+ import * as Sentry from '@sentry/nextjs';
+diff --git a/components/constructor/MobileLayersSwipe.tsx b/components/constructor/MobileLayersSwipe.tsx
+new file mode 100644
+index 0000000..5f7b342
+--- /dev/null
++++ b/components/constructor/MobileLayersSwipe.tsx
+@@ -0,0 +1,64 @@
++'use client';
++import { useState, useRef, useEffect } from 'react';
 +
-+ export async function GET() {
-+   Sentry.captureException(new Error('Test Sentry error'));
-+   return new Response('Error test sent', { status: 500 });
-+ }
-
-// 5. Optimize draft saving
-// file: app/hooks/useOptimizedDraft.ts
-+ 'use client';
-+ import { useRef, useEffect } from 'react';
-+ import { useDebounce } from '@/shared/hooks/useDebounce';
++type Layer = { id: string; imageUrl: string; title: string };
 +
-+ export function useOptimizedDraft(userId?: string) {
-+   const prevConfig = useRef<string>('');
-+   const debouncedConfig = useDebounce(draft?.config ?? {}, 30_000);
++export function MobileLayersSwipe({ layers }: { layers: Layer[] }) {
++  const [index, setIndex] = useState(0);
++  const containerRef = useRef<HTMLDivElement>(null);
 +
-+   useEffect(() => {
-+     const configStr = JSON.stringify(debouncedConfig);
-+     if (configStr !== prevConfig.current) {
-+       save(debouncedConfig);
-+       prevConfig.current = configStr;
-+     }
-+   }, [debouncedConfig, userId]);
++  // update a CSS variable so the transition is smooth
++  useEffect(() => {
++    if (containerRef.current) {
++      containerRef.current.style.setProperty('--slide-index', String(index));
++    }
++  }, [index]);
 +
-+   return { draft, saving, load, setDraft };
-+ }
-
-// 6. Add price calculation API
-// file: app/api/price/route.ts
-+ import { NextRequest, NextResponse } from 'next/server';
-+ import { z } from 'zod';
-+ import { calculatePrice } from '@/shared/lib/price/priceCalculator';
++  const onTouchStart = (e: React.TouchEvent) => {
++    (e.target as HTMLElement).dataset.touchStart = String(e.touches[0].clientX);
++  };
 +
-+ const PriceRequestSchema = z.object({
-+   config: z.record(z.any()),
-+ });
++  const onTouchMove = (e: React.TouchEvent) => {
++    const startX = Number((e.target as HTMLElement).dataset.touchStart);
++    if (!startX) return;
++    const diff = e.touches[0].clientX - startX;
++    if (Math.abs(diff) > 40) {
++      if (diff > 0 && index > 0) setIndex(i => i - 1);
++      else if (diff < 0 && index < layers.length - 1) setIndex(i => i + 1);
++      (e.target as HTMLElement).removeAttribute('data-touch-start');
++    }
++  };
 +
-+ export async function POST(req: NextRequest) {
-+   const body = await req.json();
-+   const parsed = PriceRequestSchema.safeParse(body);
++  const onTouchEnd = () => {
++    // nothing needed
++  };
 +
-+   if (!parsed.success) {
-+     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-+   }
-+
-+   try {
-+     const price = calculatePrice(parsed.data.config);
-+     return NextResponse.json({ price });
-+   } catch (e) {
-+     return NextResponse.json({ error: 'Calculation failed' }, { status: 500 });
-+   }
-+ }
-
-// 7. Add address validation
-// file: components/checkout/AddressForm.tsx
-+ 'use client';
-+ import { useState } from 'react';
-+ import { z } from 'zod';
-+
-+ const AddressSchema = z.object({
-+   city: z.string().min(2, 'Минимум 2 символа'),
-+   street: z.string().min(2, 'Минимум 2 символа'),
-+   house: z.string().min(1, 'Обязательное поле'),
-+ });
-+
-+ export function AddressForm({ onValid }: { onValid: (address: z.infer<typeof AddressSchema>) => void }) {
-+   const [address, setAddress] = useState<z.infer<typeof AddressSchema>>({
-+     city: '', street: '', house: ''
-+   });
-+   const [errors, setErrors] = useState<Record<string, string>>({});
-+
-+   const handleValidate = () => {
-+     const result = AddressSchema.safeParse(address);
-+     if (!result.success) {
-+       const errs: Record<string, string> = {};
-+       result.error.issues.forEach(i => {
-+         errs[i.path[0] as string] = i.message;
-+       });
-+       setErrors(errs);
-+       return;
-+     }
-+     onValid(result.data);
-+   };
-+
-+   return (
-+     <div className="space-y-3">
-+       {/* ... input fields with error handling ... */}
-+       <button onClick={handleValidate}>Проверить адрес</button>
-+     </div>
-+   );
-+ }
-
-// 8. Improve mobile swipe experience
-// file: components/constructor/MobileLayersSwipe.tsx
-+ 'use client';
-+ import { useState, useRef, useEffect } from 'react';
-+
-+ export function MobileLayersSwipe({ layers }: { layers: Layer[] }) {
-+   const [index, setIndex] = useState(0);
-+   const containerRef = useRef<HTMLDivElement>(null);
-+
-+   useEffect(() => {
-+     if (containerRef.current) {
-+       containerRef.current.style.setProperty('--slide-index', String(index));
-+     }
-+   }, [index]);
-+
-+   return (
-+     <div
-+       ref={containerRef}
-+       className="relative w-full h-64 overflow-hidden touch-pan-y"
-+     >
-+       <div
-+         className="flex h-full transition-transform duration-300 ease-out will-change-transform"
-+         style={{
-+           transform: `translateX(calc(-1 * var(--slide-index) * 100%))`,
-+         }}
-+       >
-+         {layers.map((layer) => (
-+           <div key={layer.id} className="w-full flex-shrink-0 flex items-center justify-center">
-+             <img
-+               src={layer.imageUrl}
-+               alt={layer.title}
-+               className="max-h-full max-w-full object-contain select-none"
-+               draggable={false}
-+             />
-+           </div>
-+         ))}
-+       </div>
-+       {/* Dots navigation with accessibility */}
-+     </div>
-+   );
-+ }
++  return (
++    <div
++      ref={containerRef}
++      className="relative w-full h-64 overflow-hidden touch-pan-y"
++      onTouchStart={onTouchStart}
++      onTouchMove={onTouchMove}
++      onTouchEnd={onTouchEnd}
++    >
++      <div
++        className="flex h-full transition-transform duration-300 ease-out will-change-transform"
++        style={{ transform: `translateX(calc(-1 * var(--slide-index) * 100%))` }}
++      >
++        {layers.map((layer) => (
++          <div key={layer.id} className="w-full flex-shrink-0 flex items-center justify-center">
++            <img
++              src={layer.imageUrl}
++              alt={layer.title}
++              className="max-h-full max-w-full object-contain select-none"
++              draggable={false}
++            />
++          </div>
++        ))}
++      </div>
++      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
++        {layers.map((_, i) => (
++          <button
++            key={i}
++            className={`w-2 h-2 rounded-full ${i === index ? 'bg-blue-600' : 'bg-gray-300'}`}
++            onClick={() => setIndex(i)}
++            aria-label={`Слой ${i + 1}`}
++          />
++        ))}
++      </div>
++    </div>
++  );
++}
