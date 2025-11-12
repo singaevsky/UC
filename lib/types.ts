@@ -102,4 +102,4 @@ export interface DashboardStats {
   pendingOrders: number;
   completedOrders: number;
 }
->>>>>>> 78f6f56489c2b1629243de13e1151d7d7000e0ba
+
