@@ -1,19 +1,19 @@
-// file: next.config.js
+﻿// file: next.config.js
 const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ✅ Базовые настройки
+  // тЬЕ ╨С╨░╨╖╨╛╨▓╤Л╨╡ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕
   reactStrictMode: true,
   swcMinify: true,
 
-  // ✅ Экспериментальные функции
+  // тЬЕ ╨н╨║╤Б╨┐╨╡╤А╨╕╨╝╨╡╨╜╤В╨░╨╗╤М╨╜╤Л╨╡ ╤Д╤Г╨╜╨║╤Ж╨╕╨╕
   experimental: {
     instrumentationHook: true,
     serverComponentsExternalPackages: ['@prisma/client', 'bcrypt'],
   },
 
-  // ✅ Настройки изображений
+  // тЬЕ ╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ╨╕╨╖╨╛╨▒╤А╨░╨╢╨╡╨╜╨╕╨╣
   images: {
     domains: [
       'localhost',
@@ -26,16 +26,16 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
 
-  // ✅ Компрессия
+  // тЬЕ ╨Ъ╨╛╨╝╨┐╤А╨╡╤Б╤Б╨╕╤П
   compress: true,
 
-  // ✅ Headers для безопасности и производительности
+  // тЬЕ Headers ╨┤╨╗╤П ╨▒╨╡╨╖╨╛╨┐╨░╤Б╨╜╨╛╤Б╤В╨╕ ╨╕ ╨┐╤А╨╛╨╕╨╖╨▓╨╛╨┤╨╕╤В╨╡╨╗╤М╨╜╨╛╤Б╤В╨╕
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
-          // ✅ Security Headers
+          // тЬЕ Security Headers
           {
             key: 'X-Frame-Options',
             value: 'DENY',
@@ -57,7 +57,7 @@ const nextConfig = {
             value: '1; mode=block',
           },
 
-          // ✅ Content Security Policy
+          // тЬЕ Content Security Policy
           {
             key: 'Content-Security-Policy',
             value: [
@@ -73,7 +73,7 @@ const nextConfig = {
             ].join('; '),
           },
 
-          // ✅ Performance Headers
+          // тЬЕ Performance Headers
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
@@ -85,7 +85,7 @@ const nextConfig = {
         ],
       },
 
-      // ✅ CORS Headers для API
+      // тЬЕ CORS Headers ╨┤╨╗╤П API
       {
         source: '/api/(.*)',
         headers: [
@@ -106,7 +106,7 @@ const nextConfig = {
         ],
       },
 
-      // ✅ Кеширование статических файлов
+      // тЬЕ ╨Ъ╨╡╤И╨╕╤А╨╛╨▓╨░╨╜╨╕╨╡ ╤Б╤В╨░╤В╨╕╤З╨╡╤Б╨║╨╕╤Е ╤Д╨░╨╣╨╗╨╛╨▓
       {
         source: '/_next/static/(.*)',
         headers: [
@@ -117,7 +117,7 @@ const nextConfig = {
         ],
       },
 
-      // ✅ Кеширование изображений
+      // тЬЕ ╨Ъ╨╡╤И╨╕╤А╨╛╨▓╨░╨╜╨╕╨╡ ╨╕╨╖╨╛╨▒╤А╨░╨╢╨╡╨╜╨╕╨╣
       {
         source: '/(.*)\\.(svg|png|jpg|jpeg|gif|webp|avif)',
         headers: [
@@ -130,7 +130,7 @@ const nextConfig = {
     ];
   },
 
-  // ✅ Redirects
+  // тЬЕ Redirects
   async redirects() {
     return [
       {
@@ -146,7 +146,7 @@ const nextConfig = {
     ];
   },
 
-  // ✅ Rewrites
+  // тЬЕ Rewrites
   async rewrites() {
     return [
       {
@@ -156,19 +156,19 @@ const nextConfig = {
     ];
   },
 
-  // ✅ Environment Variables для клиента
+  // тЬЕ Environment Variables ╨┤╨╗╤П ╨║╨╗╨╕╨╡╨╜╤В╨░
   env: {
     CUSTOM_KEY: 'my-value',
   },
 
-  // ✅ Настройки Webpack
+  // тЬЕ ╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ Webpack
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // ✅ Оптимизация для production
+    // тЬЕ ╨Ю╨┐╤В╨╕╨╝╨╕╨╖╨░╤Ж╨╕╤П ╨┤╨╗╤П production
     if (!dev && !isServer) {
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,
 
-        // Отдельный чанк для vendor библиотек
+        // ╨Ю╤В╨┤╨╡╨╗╤М╨╜╤Л╨╣ ╤З╨░╨╜╨║ ╨┤╨╗╤П vendor ╨▒╨╕╨▒╨╗╨╕╨╛╤В╨╡╨║
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendors',
@@ -176,7 +176,7 @@ const nextConfig = {
           priority: 10,
         },
 
-        // Отдельный чанк для UI компонентов
+        // ╨Ю╤В╨┤╨╡╨╗╤М╨╜╤Л╨╣ ╤З╨░╨╜╨║ ╨┤╨╗╤П UI ╨║╨╛╨╝╨┐╨╛╨╜╨╡╨╜╤В╨╛╨▓
         ui: {
           test: /[\\/]components[\\/]/,
           name: 'ui',
@@ -186,7 +186,7 @@ const nextConfig = {
       };
     }
 
-    // ✅ Исключаем большие файлы из бандла
+    // тЬЕ ╨Ш╤Б╨║╨╗╤О╤З╨░╨╡╨╝ ╨▒╨╛╨╗╤М╤И╨╕╨╡ ╤Д╨░╨╣╨╗╤Л ╨╕╨╖ ╨▒╨░╨╜╨┤╨╗╨░
     config.module.rules.push({
       test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)$/,
       use: {
@@ -201,18 +201,18 @@ const nextConfig = {
     return config;
   },
 
-  // ✅ Настройки TypeScript
+  // тЬЕ ╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ TypeScript
   typescript: {
     ignoreBuildErrors: false,
   },
 
-  // ✅ Настройки ESLint
+  // тЬЕ ╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ESLint
   eslint: {
     ignoreDuringBuilds: false,
     dirs: ['pages', 'utils'],
   },
 
-  // ✅ Настройки Bundle Analyzer (только в dev)
+  // тЬЕ ╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ Bundle Analyzer (╤В╨╛╨╗╤М╨║╨╛ ╨▓ dev)
   ...(process.env.ANALYZE === 'true' && {
     webpack: (config) => {
       if (process.env.ANALYZE === 'true') {
@@ -229,37 +229,38 @@ const nextConfig = {
   }),
 };
 
-// ✅ Конфигурация Sentry
+// тЬЕ ╨Ъ╨╛╨╜╤Д╨╕╨│╤Г╤А╨░╤Ж╨╕╤П Sentry
 const sentryWebpackPluginOptions = {
-  // ✅ Основные настройки
+  // тЬЕ ╨Ю╤Б╨╜╨╛╨▓╨╜╤Л╨╡ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕
   silent: true,
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
 
-  // ✅ Настройки загрузки source maps
+  // тЬЕ ╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ╨╖╨░╨│╤А╤Г╨╖╨║╨╕ source maps
   widenClientFileUpload: true,
   hideSourceMaps: false,
 
-  // ✅ Включаем автоматическую генерацию release
+  // тЬЕ ╨Т╨║╨╗╤О╤З╨░╨╡╨╝ ╨░╨▓╤В╨╛╨╝╨░╤В╨╕╤З╨╡╤Б╨║╤Г╤О ╨│╨╡╨╜╨╡╤А╨░╤Ж╨╕╤О release
   automaticVercelMonitors: true,
 
-  // ✅ Исключаем определенные файлы из source maps
+  // тЬЕ ╨Ш╤Б╨║╨╗╤О╤З╨░╨╡╨╝ ╨╛╨┐╤А╨╡╨┤╨╡╨╗╨╡╨╜╨╜╤Л╨╡ ╤Д╨░╨╣╨╗╤Л ╨╕╨╖ source maps
   exclude: [
     /node_modules/,
     /\.(test|spec)\.(js|ts|tsx)$/,
     /__tests__/,
   ],
 
-  // ✅ Дополнительные настройки для production
+  // тЬЕ ╨Ф╨╛╨┐╨╛╨╗╨╜╨╕╤В╨╡╨╗╤М╨╜╤Л╨╡ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ╨┤╨╗╤П production
   ...(process.env.NODE_ENV === 'production' && {
     publishRelease: true,
     telemetry: false,
   }),
 };
 
-// ✅ Объединяем конфигурации
+// тЬЕ ╨Ю╨▒╤К╨╡╨┤╨╕╨╜╤П╨╡╨╝ ╨║╨╛╨╜╤Д╨╕╨│╤Г╤А╨░╤Ж╨╕╨╕
 const configWithSentry = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
 
-// ✅ Экспорт финальной конфигурации
+// тЬЕ ╨н╨║╤Б╨┐╨╛╤А╤В ╤Д╨╕╨╜╨░╨╗╤М╨╜╨╛╨╣ ╨║╨╛╨╜╤Д╨╕╨│╤Г╤А╨░╤Ж╨╕╨╕
 module.exports = configWithSentry;
+
