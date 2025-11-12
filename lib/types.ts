@@ -1,4 +1,4 @@
-﻿// lib/types.ts
+// lib/types.ts
 export interface Product {
   id: number;
   name: string;
@@ -37,6 +37,7 @@ export interface OrderItem {
   price: number;
   customization_data?: any;
 }
+
 
 export interface User {
   id: string;
@@ -101,3 +102,4 @@ export interface DashboardStats {
   pendingOrders: number;
   completedOrders: number;
 }
+>>>>>>> 78f6f56489c2b1629243de13e1151d7d7000e0ba
