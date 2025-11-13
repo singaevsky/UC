@@ -1,14 +1,11 @@
 // file: app/preview/[id]/page.tsx
 import { notFound } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { getClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { getPublicImageUrl } from '@/shared/utils/images';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = getClient();
 
 // ✅ Типы для TypeScript
 interface DraftCake {

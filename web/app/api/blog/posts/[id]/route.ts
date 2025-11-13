@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getServerClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 
 export async function GET(
@@ -7,7 +7,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = createClient()
+    const supabase = getServerClient()
 
         // Получаем данные поста из базы данных
         const { data: post, error } = await supabase
@@ -54,7 +54,7 @@ export async function PUT(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = createClient()
+    const supabase = getServerClient()
         const cookieStore = cookies()
         const userId = cookieStore.get('sb-access-token')?.value
 
@@ -131,7 +131,7 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = createClient()
+    const supabase = getServerClient()
         const cookieStore = cookies()
         const userId = cookieStore.get('sb-access-token')?.value
 

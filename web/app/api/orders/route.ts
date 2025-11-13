@@ -1,17 +1,12 @@
 // file: app/api/orders/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getServerClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import * as Sentry from '@sentry/nextjs';
 import { calculatePrice } from '@/shared/lib/price/priceCalculator';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+const supabase = getServerClient();
 
-// ✅ Схема валидации заказа
 const OrderSchema = z.object({
   userId: z.string().uuid('Некорректный ID пользователя'),
   delivery_type: z.enum(['pickup', 'courier', 'sdek'], {
