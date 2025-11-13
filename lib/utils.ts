@@ -1,6 +1,6 @@
-﻿// file: lib/utils.ts (фрагмент)
+﻿// file: lib/utils.ts (╤Д╤А╨░╨│╨╝╨╡╨╜╤В)
 
-// ✅ Безопасная работа с localStorage
+// тЬЕ ╨С╨╡╨╖╨╛╨┐╨░╤Б╨╜╨░╤П ╤А╨░╨▒╨╛╤В╨░ ╤Б localStorage
 export const localStorage = {
   getItem: (key: string): string | null => {
     if (typeof window === 'undefined') return null;
@@ -18,7 +18,7 @@ export const localStorage = {
       }
       window.localStorage.setItem(key, value);
     } catch {
-      // Игнорируем ошибки
+      // ╨Ш╨│╨╜╨╛╤А╨╕╤А╤Г╨╡╨╝ ╨╛╤И╨╕╨▒╨║╨╕
     }
   },
   getJSON: <T>(key: string, fallback: T): T => {
@@ -37,7 +37,7 @@ export const localStorage = {
       const stringValue = JSON.stringify(value);
       localStorage.setItem(key, stringValue);
     } catch {
-      // Игнорируем ошибки сериализации
+      // ╨Ш╨│╨╜╨╛╤А╨╕╤А╤Г╨╡╨╝ ╨╛╤И╨╕╨▒╨║╨╕ ╤Б╨╡╤А╨╕╨░╨╗╨╕╨╖╨░╤Ж╨╕╨╕
     }
   },
   removeItem: (key: string): void => {
@@ -45,12 +45,12 @@ export const localStorage = {
     try {
       window.localStorage.removeItem(key);
     } catch {
-      // Игнорируем ошибки
+      // ╨Ш╨│╨╜╨╛╤А╨╕╤А╤Г╨╡╨╝ ╨╛╤И╨╕╨▒╨║╨╕
     }
   },
 };
 
-// ✅ Безопасное чтение JSON
+// тЬЕ ╨С╨╡╨╖╨╛╨┐╨░╤Б╨╜╨╛╨╡ ╤З╤В╨╡╨╜╨╕╨╡ JSON
 export function safeJsonParse<T>(json: string, fallback: T): T {
   try {
     const parsed = JSON.parse(json);
@@ -59,3 +59,4 @@ export function safeJsonParse<T>(json: string, fallback: T): T {
     return fallback;
   }
 }
+

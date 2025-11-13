@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "uc-constructor",
   "version": "1.0.0",
-  "description": "UC Cake Constructor - веб-приложение для создания уникальных тортов",
+  "description": "UC Cake Constructor - РІРµР±-РїСЂРёР»РѕР¶РµРЅРёРµ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СѓРЅРёРєР°Р»СЊРЅС‹С… С‚РѕСЂС‚РѕРІ",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -74,34 +74,33 @@
   "devDependencies": {
     "@commitlint/cli": "^18.4.2",
     "@commitlint/config-conventional": "^18.4.2",
-    "@testing-library/jest-dom": "^6.1.4",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^14.5.1",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.9.0",
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
-    "autoprefixer": "^10.4.16",
+    "autoprefixer": "^10.4.0",
     "cross-env": "^7.0.3",
-    "eslint": "^8.54.0",
+    "eslint": "^8.0.0",
     "eslint-config-next": "14.0.3",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",
     "husky": "^8.0.3",
-    "jest": "^29.7.0",
+    "jest": "^29.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.1.0",
-    "postcss": "^8.4.31",
+    "postcss": "^8.4.0",
     "prettier": "^3.1.0",
-    "prisma": "^5.6.0",
-    "sentry-cli": "^2.25.0",
-    "tailwindcss": "^3.3.5",
+    "prisma": "^5.6.0"
+    "tailwindcss": "^3.3.0",
     "tsx": "^4.6.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.0.0",
     "webpack-bundle-analyzer": "^4.10.1"
   },
   "engines": {
@@ -163,3 +162,4 @@
   },
   "homepage": "https://github.com/singaevsky/UC#readme"
 }
+
