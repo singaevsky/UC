@@ -1,5 +1,14 @@
-import { cookies } from 'next/headers';
-import { createServerComponentClient, createServerActionClient } from '@supabase/auth-helpers-nextjs';
+﻿import { cookies } from 'next/headers'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Database } from '@/types/database'
 
-export const getServerClient = () => createServerComponentClient({ cookies });
-export const getServerActionClient = () => createServerActionClient({ cookies });
+// Создание клиента для Server Components и API Routes
+export function createClient() {
+  return createServerComponentClient<Database>({ cookies })
+}
+
+// лиас для совместимости
+export const createServerClient = createClient
+
+// кспорт типов для удобства
+export type { Database }
