@@ -1,11 +1,9 @@
 // file: app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
+import './globals.scss';
 import '../lib/logrocket';
 import { Toaster } from 'react-hot-toast';
 
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'UC - Конструктор тортов',
@@ -42,7 +40,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#3b82f6" />
       </head>
-      <body className={inter.className}>
+  <body className="font-sans">
         <div className="min-h-screen bg-gray-50 flex flex-col">
           <header className="bg-white shadow-sm border-b sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4">

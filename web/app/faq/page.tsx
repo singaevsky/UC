@@ -1,7 +1,6 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import FAQItem from '@/components/faq/FAQItem';
 import FadeIn from '@/components/animations/FadeIn';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import type { FaqItem } from '@/types/blog';
@@ -175,48 +174,4 @@ export default async function FAQPage() {
   );
 }
 
-function FAQItem({ item }: { item: FaqItem }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const supabase = createClientComponentClient();
-
-  return (
-    <div id={`faq-${item.id}`} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          width: '100%',
-          textAlign: 'left',
-          background: 'none',
-          border: 'none',
-          padding: '8px 0',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: '600',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
-      >
-        <span>{item.question}</span>
-        <span style={{
-          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          transition: 'transform 0.2s'
-        }}>
-          ▼
-        </span>
-      </button>
-
-      {isOpen && (
-        <div style={{
-          padding: '12px',
-          background: 'var(--color-cream)',
-          borderRadius: '8px',
-          marginTop: '8px',
-          lineHeight: 1.6
-        }}>
-          <div dangerouslySetInnerHTML={{ __html: item.answer }} />
-        </div>
-      )}
-    </div>
-  );
-}
+// client-side FAQ item component is provided by `components/faq/FAQItem.tsx`

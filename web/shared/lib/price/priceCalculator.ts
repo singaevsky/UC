@@ -332,4 +332,5 @@ export function compareConfigurations(configs: Partial<CakeConfig>[]): Array<{ c
 }
 
 // ✅ Экспорт констант для использования в других частях приложения
-export { PRICE_CONFIG };
+// PRICE_CONFIG уже экспортируется выше при объявлении через `export const PRICE_CONFIG`.
+// Удаляем явный повторный ре-экспорт, чтобы избежать ошибки компиляции о дублированном экспорте.
